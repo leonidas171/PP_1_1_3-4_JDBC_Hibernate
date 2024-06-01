@@ -1,35 +1,98 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.util.Util;
 
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class UserDaoJDBCImpl implements UserDao {
-    public UserDaoJDBCImpl() {
+    private final Connection connection = Util.getConnection();
 
+    public UserDaoJDBCImpl() {
     }
 
     public void createUsersTable() {
-
+        String sql = """
+                CREATE TABLE users (
+                  id INT NOT NULL AUTO_INCREMENT,
+                  name VARCHAR(45) NOT NULL,
+                  lastname VARCHAR(45) NOT NULL,
+                  age TINYINT NOT NULL,
+                  PRIMARY KEY (id)
+                )
+                """;
+        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
+            statement.execute(sql);
+            System.out.println("Table created");
+        } catch (SQLException e) {
+            System.out.println("Error creating users table:" + e.getMessage());
+        }
     }
 
     public void dropUsersTable() {
-
+        String sql = "DROP TABLE `users`";
+        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
+            statement.execute(sql);
+            System.out.println("Users table dropped");
+        } catch (SQLException e) {
+            System.out.println("Error drop users table:" + e.getMessage());
+        }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-
+        String sql = String.format("INSERT INTO users (name, lastName, age) VALUES ('%s', '%s', '%s')", name, lastName, age);
+        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
+            statement.execute(sql);
+            System.out.println("User saved");
+        } catch (SQLException e) {
+            System.out.println("Error user saving:" + e.getMessage());
+        }
     }
 
     public void removeUserById(long id) {
+        String sql = String.format("DELETE FROM users WHERE id = %s", id);
 
+        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
+            statement.execute(sql);
+            System.out.println("User delete");
+        } catch (SQLException e) {
+            System.out.println("Error user delete:" + e.getMessage());
+        }
     }
 
     public List<User> getAllUsers() {
-        return null;
+        String sql = "SELECT * FROM users";
+        List<User> users = new ArrayList<>();
+
+        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                User user = new User();
+                user.setId(resultSet.getLong("id"));
+                user.setName(resultSet.getString("name"));
+                user.setLastName(resultSet.getString("lastName"));
+                user.setAge(resultSet.getByte("age"));
+                users.add(user);
+            }
+            System.out.println("Get all users complete");
+        } catch (SQLException e) {
+            System.out.println("Error get all users:" + e.getMessage());
+        }
+
+        return users;
     }
 
     public void cleanUsersTable() {
-
+        String sql = "DROP TABLE IF EXISTS users";
+        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
+            statement.execute(sql);
+            createUsersTable();
+            System.out.println("Users table clean");
+        } catch (SQLException e) {
+            System.out.println("Error clean users table:" + e.getMessage());
+        }
     }
 }
