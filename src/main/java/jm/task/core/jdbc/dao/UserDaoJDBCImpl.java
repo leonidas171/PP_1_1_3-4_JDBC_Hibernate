@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class UserDaoJDBCImpl implements UserDao {
-    private final Connection connection = Util.getConnection();
-
+    //Какой или какие sout'ы нужно удалить?
+    //Все sout'ы и вместо них кидать исключения через throw?
     public UserDaoJDBCImpl() {
     }
 
@@ -43,18 +43,22 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String sql = String.format("INSERT INTO users (name, lastName, age) VALUES ('%s', '%s', '%s')", name, lastName, age);
-        try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
-            statement.execute(sql);
+        String sql = "INSERT INTO users (name, lastName, age) VALUES (?, ?, ?)";
+        try (Connection connection = Util.getConnection();
+             PreparedStatement preparedStatement = Objects.requireNonNull(connection).prepareStatement(sql)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+
+            preparedStatement.executeUpdate();
             System.out.println("User saved");
         } catch (SQLException e) {
-            System.out.println("Error user saving:" + e.getMessage());
+            System.out.println("Error saving user: " + e.getMessage());
         }
     }
 
     public void removeUserById(long id) {
         String sql = String.format("DELETE FROM users WHERE id = %s", id);
-
         try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
             statement.execute(sql);
             System.out.println("User delete");
