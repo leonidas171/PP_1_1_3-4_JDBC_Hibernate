@@ -7,10 +7,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public class UserDaoJDBCImpl implements UserDao {
-    //Какой или какие sout'ы нужно удалить?
-    //Все sout'ы и вместо них кидать исключения через throw?
+    private static final Logger LOGGER = Logger.getLogger(UserDaoJDBCImpl.class.getName());
+
     public UserDaoJDBCImpl() {
     }
 
@@ -26,9 +27,9 @@ public class UserDaoJDBCImpl implements UserDao {
                 """;
         try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
             statement.execute(sql);
-            System.out.println("Table created");
+            LOGGER.fine("Table created");
         } catch (SQLException e) {
-            System.out.println("Error creating users table:" + e.getMessage());
+            LOGGER.severe("Error creating users table:" + e.getMessage());
         }
     }
 
@@ -36,9 +37,9 @@ public class UserDaoJDBCImpl implements UserDao {
         String sql = "DROP TABLE `users`";
         try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
             statement.execute(sql);
-            System.out.println("Users table dropped");
+            LOGGER.fine("Users table dropped");
         } catch (SQLException e) {
-            System.out.println("Error drop users table:" + e.getMessage());
+            LOGGER.severe("Error: drop users table:" + e.getMessage());
         }
     }
 
@@ -51,9 +52,9 @@ public class UserDaoJDBCImpl implements UserDao {
             preparedStatement.setByte(3, age);
 
             preparedStatement.executeUpdate();
-            System.out.println("User saved");
+            LOGGER.fine("User saved");
         } catch (SQLException e) {
-            System.out.println("Error saving user: " + e.getMessage());
+            LOGGER.severe("Error saving user: " + e.getMessage());
         }
     }
 
@@ -61,9 +62,9 @@ public class UserDaoJDBCImpl implements UserDao {
         String sql = String.format("DELETE FROM users WHERE id = %s", id);
         try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
             statement.execute(sql);
-            System.out.println("User delete");
+            LOGGER.fine("User delete");
         } catch (SQLException e) {
-            System.out.println("Error user delete:" + e.getMessage());
+            LOGGER.severe("Error user delete:" + e.getMessage());
         }
     }
 
@@ -81,9 +82,9 @@ public class UserDaoJDBCImpl implements UserDao {
                 user.setAge(resultSet.getByte("age"));
                 users.add(user);
             }
-            System.out.println("Get all users complete");
+            LOGGER.fine("Get all users complete");
         } catch (SQLException e) {
-            System.out.println("Error get all users:" + e.getMessage());
+            LOGGER.severe("Error get all users:" + e.getMessage());
         }
 
         return users;
@@ -94,9 +95,9 @@ public class UserDaoJDBCImpl implements UserDao {
         try (Statement statement = Objects.requireNonNull(Util.getConnection()).createStatement()) {
             statement.execute(sql);
             createUsersTable();
-            System.out.println("Users table clean");
+            LOGGER.fine("Users table clean");
         } catch (SQLException e) {
-            System.out.println("Error clean users table:" + e.getMessage());
+            LOGGER.severe("Error clean users table:" + e.getMessage());
         }
     }
 }
